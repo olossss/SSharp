@@ -2,7 +2,7 @@
 
   <!-- define all solutions that should be build -->
   <ItemGroup>
-    <ProjectToBuild Include="SSharp.sln"/>
+    <ProjectToBuild Include="SSharp.Unix.sln"/>
   </ItemGroup>
 
   <!-- define all the configurations that we should build -->
@@ -10,13 +10,11 @@
     <Config Include="Debug|Any CPU">
       <Type>Debug</Type>
       <Platform>AnyCPU</Platform>
-      <RunTest>true</RunTest>
       <Build>true</Build>
     </Config>
     <Config Include="Release|x86">
       <Type>Release</Type>
       <Platform>AnyCPU</Platform>
-      <RunTest>false</RunTest>
       <Build>true</Build>
     </Config>
   </ItemGroup>
@@ -52,17 +50,6 @@
     <CallTarget Targets="RunTest" Condition="'$(RunTest)'=='true'"/>
   </Target>
 
-  <Target Name="RunTest">
-    <Message Text="Running Tests" />
-
-
-    <Exec Command="$(MSBuildProjectDirectory)\Binaries\NET\$(Platform)-$(Configuration)\Scripting.Debug.TestExecute.exe &quot;$(MSBuildProjectDirectory)\IntegrationTests&quot;"
-          WorkingDirectory="$(MSBuildProjectDirectory)\Binaries\NET\$(Platform)-$(Configuration)\" />
-
-    <Exec Command="mstest /resultsfile:test_result.trx /testlist:&quot;Acceptance Tests&quot; /testmetadata:SSharp.vsmdi"
-          WorkingDirectory="$(MSBuildProjectDirectory)\Binaries\NET\$(Platform)-$(Configuration)\" />
-  </Target>
-  
   <Target Name="Clean">
     <Message Text="Cleaning solution" />
     <Exec Command="rm -rf Binaries"/>
