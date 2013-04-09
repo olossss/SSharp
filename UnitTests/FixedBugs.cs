@@ -211,6 +211,8 @@ namespace UnitTests
       Assert.IsTrue((bool)eq.Evaluate(Single.Parse("1"), Double.Parse("1")));
       Assert.IsTrue((bool)eq.Evaluate(Single.Parse("1"), Single.Parse("1")));
 
+      Assert.IsTrue((bool)eq.Evaluate(null, null));
+
       //Assert.IsTrue((bool)eq.Evaluate("C", 'C'));
 
     }
@@ -461,6 +463,56 @@ namespace UnitTests
       Assert.AreEqual(2.3*(double)((new Decimal(19.2d))+1), s1.Context.GetItem("d", true));
 
     }
+
+    [TestMethod]
+    public void ExpressionTypeConversion_Bug() {
+        string code1 = "a='19'; b='3'; s=(Decimal)a+(Decimal)b;";
+        var s = Script.Compile(code1);
+        var c = s.Execute();
+        string tt = s.SyntaxTree;
+        Assert.IsInstanceOfType(c, typeof(decimal));
+        Assert.AreEqual(new Decimal(22), c);
+    }
+
+    [TestMethod]
+    public void NullValueBinding() {
+        var s = Script.Compile(@"shipName = null;
+                    if( shipName == null ) shipName = '';
+        ");
+        var c = s.Execute();
+        Assert.AreEqual("", c);
+    }
+
+    [TestMethod]
+    public void SettingPublicProperty() {
+      var result = Script.RunCode(@"
+         var d = new PropertiesDerived();
+         d.ModifiedOnPublicSetter = DateTime.Now;
+         return d.ModifiedOnPublicSetter;
+      ");
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void SettingPrivateProperty() {
+        var result = Script.RunCode(@"
+         var d = new PropertiesDerived();
+         d.ModifiedOn = DateTime.Now;
+         return d.ModifiedOn;
+      ");
+    }
+
+    [TestMethod]
+    public void TrueConstant() {
+        Assert.IsInstanceOfType(Script.RunCode("return true;"), typeof(bool));
+        Assert.IsInstanceOfType(Script.RunCode("return false;"), typeof(bool));
+        Assert.IsNull(Script.RunCode("return null;"));
+
+        Assert.IsInstanceOfType(Script.RunCode("return \"true\";"), typeof(string));
+        Assert.IsInstanceOfType(Script.RunCode("return \"false\";"), typeof(string));
+        Assert.IsInstanceOfType(Script.RunCode("return \"null\";"), typeof(string));
+    }
+
   }
 
   #region Interfaces
@@ -548,6 +600,16 @@ namespace UnitTests
       public string Instance = "Test1";
     }
   }
+
+    public class PropertiesTest {
+        public DateTime ModifiedOn { get; private set; }
+
+        public DateTime ModifiedOnPublicSetter { get; set; }
+    }
+
+    public class PropertiesDerived : PropertiesTest {
+    }
+
   #endregion
 
   #region Helpers

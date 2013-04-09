@@ -50,6 +50,9 @@ namespace Scripting.SSharp
       }
       */
 
+      if (left == null || right == null)
+        return null;
+
       Type leftType = left.GetType();
       if (converters.ContainsKey(leftType))
       {
@@ -68,7 +71,7 @@ namespace Scripting.SSharp
       AddConverter<decimal, double>((left, right) => new Tuple<dynamic, dynamic>((double)left, right));
       AddConverter<double, decimal>((left, right) => new Tuple<dynamic, dynamic>(left, (double)right));
 
-      AddConverter<decimal, float>((left, right) => new Tuple<dynamic, dynamic>((float)left, right));      
+      AddConverter<decimal, float>((left, right) => new Tuple<dynamic, dynamic>((float)left, right));
       AddConverter<float, decimal>((left, right) => new Tuple<dynamic, dynamic>(left, (float)right));
       
       Func<dynamic, dynamic, Tuple<dynamic, dynamic>> rightToString = (left, right) => new Tuple<dynamic, dynamic>(left, right.ToString());
@@ -79,7 +82,7 @@ namespace Scripting.SSharp
       AddConverter<string, Int64>(rightToString);
       AddConverter<string, float>(rightToString);
       AddConverter<string, decimal>(rightToString);
-      AddConverter<string, double>(rightToString);      
+      AddConverter<string, double>(rightToString);
 
       AddConverter<Int16, string>(leftToString);
       AddConverter<Int32, string>(leftToString);
@@ -95,10 +98,16 @@ namespace Scripting.SSharp
     public static bool Eq(dynamic left, dynamic right)
     {
       Tuple<dynamic, dynamic> converted = TryConvert(left, right);
-      if (converted != null) 
+      if (converted != null)
         return ((converted.Item1 == converted.Item2) || (((converted.Item1 != null) && (converted.Item2 != null)) && converted.Item1.Equals(converted.Item2)));
 
+      // Use such comparsion instead of object.Equals(left, right); in order to force appropriate == operator
+      // and to avoid boxing for primitive types
       return ((left == right) || (((left != null) && (right != null)) && left.Equals(right)));
+    }
+
+    public static bool Neq(dynamic left, dynamic right) {
+        return !Eq(left, right);
     }
 
     public static dynamic Add(dynamic left, dynamic right)
@@ -185,7 +194,7 @@ namespace Scripting.SSharp
       return left / right;
     }
 
-    public static bool And(dynamic left, dynamic right)
+    public static dynamic And(dynamic left, dynamic right)
     {
       return left & right;
     }
@@ -195,7 +204,7 @@ namespace Scripting.SSharp
       return left && right;
     }
 
-    public static bool Or(dynamic left, dynamic right)
+    public static dynamic Or(dynamic left, dynamic right)
     {
       return left | right;
     }

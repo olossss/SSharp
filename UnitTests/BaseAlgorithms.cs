@@ -212,6 +212,8 @@ namespace UnitTests
       object rez = Script.RunCode(@"a = System.Text.RegularExpressions.Regex.CacheSize;");
 
       Assert.AreEqual(System.Text.RegularExpressions.Regex.CacheSize, rez);
+
+      Assert.AreEqual(Scripting.SSharp.Runtime.RuntimeHost.Activator, Script.RunCode("return Scripting.SSharp.Runtime.RuntimeHost.Activator;"));
     }
 
     [TestMethod]
@@ -636,6 +638,25 @@ namespace UnitTests
       ");
 
       Assert.AreEqual(false, rez);
+    }
+
+    [TestMethod]
+    public void BitOperators() {
+        object rez = Script.RunCode(@"
+         a = 1;
+         b = 2;
+         return a|b;
+      ");
+
+        Assert.AreEqual(3, rez);
+
+        rez = Script.RunCode(@"
+         a = 1;
+         b = 2;
+         return a&b;
+      ");
+
+        Assert.AreEqual(0, rez);
     }
 
     [TestMethod]
